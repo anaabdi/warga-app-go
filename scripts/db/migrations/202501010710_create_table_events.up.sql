@@ -23,7 +23,7 @@ CREATE TABLE event_docs (
     user_event_id INT NOT NULL,
     doc_type VARCHAR(50) NOT NULL, -- surat pengantar, kartu keluarga, akta kelahiran, akta nikah, dll
     doc_name VARCHAR(100) NOT NULL,
-    doc_url VARCHAR(255) NOT NULL,
+    doc_url VARCHAR(255) NOT NULL, -- https://s3.aws.cloud/lokasidirektori/filea.png -> /lokasidirektori/filea.png
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

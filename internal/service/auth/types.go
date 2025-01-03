@@ -25,7 +25,13 @@ func NewAuthService(userrepo user.User, transactionalDB repository.Database) Aut
 func (a AuthService) Login(ctx context.Context, username, password string) (string, error) {
 	_, err := a.userrepo.FindAccountByUsername(ctx, username)
 	if err != nil {
-		return "", err
+		// slog.Error("failed to find user", slog.Error(err))
+
+		// if errors.Is(err, error.APIError) {
+		// 	return "", errors.New("user not found")
+		// }
+
+		// return "", err
 	}
 
 	return "token", nil

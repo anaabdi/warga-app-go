@@ -12,4 +12,7 @@
 -- );
 
 INSERT INTO users (name, email, password, role, id_card_number, id_family_card_number)
-VALUES ('John Doe', 'john.doe', 'password', 'admin', pgp_sym_encrypt( '7271011208920003', 'secret'), pgp_sym_encrypt( '7271011208920001', 'secret') );
+VALUES ('John Doe', 'john.doe@gmail.com', '$2a$12$EpXfyXH1IfwXBJq/OC3c2.wKJX3YbcsVxpKwiPMFzk7m2wDWeejBq', 
+'admin', 
+pgp_sym_encrypt( '7271011208920003', 'secret'), 
+pgp_sym_encrypt( '7271011208920001', 'secret') );

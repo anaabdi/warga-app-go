@@ -17,6 +17,21 @@ paths:
       tags:
         - auth
       operationId: auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: admin
       responses:
         '201':
           description: returning autthorized token, wrapped with data and token field
