@@ -10,6 +10,25 @@ type Config struct {
 	ServerHost        string
 	ServerPort        string
 	ReadHeaderTimeout time.Duration
+
+	Auth *Auth
+	DB   *DB
+}
+
+type Auth struct {
+	AccessTokenPrivateKey  string
+	AccessTokenPublicKey   string
+	AccessTokenExpiresIn   time.Duration
+	RefreshTokenPrivateKey string
+	RefreshTokenPublicKey  string
+	RefreshTokenExpiresIn  time.Duration
+}
+
+type DB struct {
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifetime string
+	URL             string
 }
 
 func NewConfig() *Config {

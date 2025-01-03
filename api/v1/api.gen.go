@@ -17,6 +17,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// AuthorizedToken defines model for AuthorizedToken.
+type AuthorizedToken struct {
+	Data struct {
+		Token string `json:"token"`
+	} `json:"data"`
+}
+
 // Pong defines model for Pong.
 type Pong struct {
 	Ping string `json:"ping"`
@@ -25,6 +32,9 @@ type Pong struct {
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (POST /auth)
+	Auth(w http.ResponseWriter, r *http.Request)
+
 	// (GET /ping)
 	GetPing(w http.ResponseWriter, r *http.Request)
 }
@@ -32,6 +42,11 @@ type ServerInterface interface {
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
+
+// (POST /auth)
+func (_ Unimplemented) Auth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
 
 // (GET /ping)
 func (_ Unimplemented) GetPing(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +61,20 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// Auth operation middleware
+func (siw *ServerInterfaceWrapper) Auth(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.Auth(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // GetPing operation middleware
 func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Request) {
@@ -175,6 +204,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/auth", wrapper.Auth)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/ping", wrapper.GetPing)
 	})
 
@@ -184,11 +216,14 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/0RQwU4rMQz8ldW8d1x1F7jlxgn1gNQ74hCybutqNzGJqUBV/h05y8LJjjNjz8wNIS2S",
-	"IkUtcDeUcKbFt/aQ4smq5CSUlalNhdcpffpFZoKDGK6Hfom9imZD1Noj0/sHZ5rgXlba6y8qvV0oKKrB",
-	"OB6TbVTWtu+ZIy9+7ozSPR72XaF8pYweV8qFU4TD3W7cjag9klD0wnB4aKMe4vXclA6b1BOpFXPhlVPc",
-	"T3B4Ij1wE56pSIpltXc/jlZCikqx0bzIzKERh0ux61tK1v3PdITDv+EvxuEnw6EF2CxOVEJm0VW8kHbb",
-	"UfuvtX4HAAD//79Hw2OHAQAA",
+	"H4sIAAAAAAAC/6yST2/aQBDFv4o17dHChjaR4ltEm3StQNI/+aNWOSz2gMfYu9vdcQiJ/N2rXaBIAamX",
+	"nnaZfYPfb+a9QqFboxUqdpC9gisqbGW4nndcaUsvWP7QS1S+ZKw2aJkwCErJ8rDKOzE+y9Y0CBngOq9m",
+	"lwVdUy5uX8RwSsIJ9e2kGItTsTQPd+P8bIDrfFiM7tYPo2Ypav18Nd78nrUX/PO7OBXtxXJ233SCViTv",
+	"L1KvmdbiZFKL1bT+ur4a5w1+Oafr+vNoUi8/TurbdPopPxsMIQZeG2/EsSW1gL6PweLvjiyWkP3aWn78",
+	"K9OzGgs+kAXeQ1UMN1otDgdhaFPdz8F43b/MhLYjXvoYSM11GDFx+L8JKWplE/mW6PxGRA7tE1qI4Qmt",
+	"I60gg+EgHaTepDaopCHI4EMoxWAkV8FpIjuugmXt2J8eQzJpJUrIQhDAm3RGK7eBG6VDfxRaMarQI41p",
+	"qAhdSe202qfJ395bnEMG75J93JJt1pK3QQusJbrCkuENhUXurPKYsuOdOgp7i6OVlcZgGa2Iq8gvKZJq",
+	"+xjNCZsyzJjlwvn5BtZHX0l2G1rgEepL5BsK+3oDnv438JCbI7QGOdp91L/3ff8nAAD//xwqv56oAwAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

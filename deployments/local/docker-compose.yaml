@@ -1,0 +1,62 @@
+version: '2'
+
+# to provide infrastructure services, like postgres database, redis, and minio for file storage,
+# all services there has to be started before the main service, and named with prefix "wargaappgo-"
+
+services:
+  wargaappgo-postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: wargaappgo
+      POSTGRES_PASSWORD: wargaappgo
+      POSTGRES_DB: wargaapp_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - wargaappgo-network
+  
+  wargaappgo-dbbrowser:
+    restart: on-failure
+    image: adminer:4-standalone
+    ports:
+        - "18080:8080"
+    depends_on:
+        - wargaappgo-postgres
+    links:
+        - wargaappgo-postgres
+    logging:
+        driver: local
+    environment:
+      - ADMINER_DEFAULT_SERVER=dbserver
+      - ADMINER_DESIGN=flat
+
+  wargaappgo-redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    networks:
+      - wargaappgo-network
+
+  wargaappgo-minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ACCESS_KEY: wargaappgo
+      MINIO_SECRET_KEY: wargaappgo
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - wargaappgo-network
+
+volumes:
+  pgdata:
+  minio-data:
+
+networks:
+  wargaappgo-network:
+    driver: bridge
